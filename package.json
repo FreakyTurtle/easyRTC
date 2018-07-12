@@ -1,0 +1,40 @@
+{
+  "name": "simplertc",
+  "version": "1.0.0",
+  "description": "A package that makes using the powerful technologies behind webRTC a breeze.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FreakyTurtle/easyRTC.git"
+  },
+  "keywords": [
+    "webRTC",
+    "getUserMedia",
+    "Video",
+    "conferencing",
+    "peer",
+    "peertopeer",
+    "peer-to-peer",
+    "audio",
+    "data",
+    "encrypted",
+    "communication",
+    "real",
+    "time"
+  ],
+  "author": "FreakyTurtle <freakyturtledev@gmail.com> (http://easytrtc.io)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FreakyTurtle/easyRTC/issues"
+  },
+  "homepage": "https://github.com/FreakyTurtle/easyRTC#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "jest": "^23.4.0"
+  }
+}

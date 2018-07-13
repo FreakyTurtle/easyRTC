@@ -1,5 +1,5 @@
 # simpleRTC
-An npm package that makes using the powerful technologies behind webRTC a breeze.  -THIS PACKAGE IS STILL IN ALPHA TESTING.
+An npm package that makes using the powerful technologies behind webRTC a breeze.
 
 
 ## Installation

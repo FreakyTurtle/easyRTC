@@ -1,6 +1,6 @@
 {
   "name": "simplertc",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A package that makes using the powerful technologies behind webRTC a breeze.",
   "main": "index.js",
   "scripts": {

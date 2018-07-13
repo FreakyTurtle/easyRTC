@@ -160,13 +160,8 @@ export class Bond {
         this.callbacks.onDataReceive(event);
     }
 
-    sendData(type, message){
-        let msg = {
-            from_id: this.id,
-            type: type,
-            message
-        };
-        this.dataChannel.send(JSON.stringify(msg));
+    sendData(message){
+        this.dataChannel.send(message);
     }
 
     //// getters and setters

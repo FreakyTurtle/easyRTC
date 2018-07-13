@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FreakyTurtle/easyRTC.git"
+    "url": "git+https://github.com/FreakyTurtle/simpleRTC.git"
   },
   "keywords": [
     "webRTC",
@@ -28,9 +28,9 @@
   "author": "FreakyTurtle <freakyturtledev@gmail.com> (http://simplertc.io)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/FreakyTurtle/easyRTC/issues"
+    "url": "https://github.com/FreakyTurtle/simpleRTC/issues"
   },
-  "homepage": "https://github.com/FreakyTurtle/easyRTC#readme",
+  "homepage": "https://github.com/FreakyTurtle/simpleRTC#readme",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-polyfill": "^6.26.0",

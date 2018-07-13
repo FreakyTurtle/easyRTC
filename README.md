@@ -260,9 +260,9 @@ socket.on('message', (fromId, msg) => {
 
 Hangs up the bond connection and sends the signalling message `bye`
 
-#### sendData(msg, type)
+#### sendData(msg)
 
-Sends data to the connected client through the peer-to-peer connection. `msg` and `type` are both strings
+Sends data to the connected client through the peer-to-peer connection.
 
 #### setBandwidth(bandwidth)
 

@@ -65,6 +65,30 @@ export class Bond {
     }
 
 
+    updateLocalStreamVideo(stream){
+        //remove all the old video tracks
+        for (var i = 0; i < this.localStream.getVideoTracks.length; i++) {
+            this.localStream.removeTrack(this.localStream.getVideoTracks[i]);
+        }
+        //add all the new video tracks
+        for (var i = 0; i < stream.getVideoTracks.length; i++) {
+            localStream.addTrack(stream.getVideoTracks[i]);
+        }
+        this.createAndSendOffer();
+    }
+
+    updateLocalStreamVideo(stream){
+        //remove all the old video tracks
+        for (var i = 0; i < this.localStream.getAudioTracks.length; i++) {
+            this.localStream.removeTrack(this.localStream.getAudioTracks[i]);
+        }
+        //add all the new video tracks
+        for (var i = 0; i < stream.getAudioTracks.length; i++) {
+            localStream.addTrack(stream.getAudioTracks[i]);
+        }
+        this.createAndSendOffer();
+    }
+
     createAndSendOffer(){
         console.log("=== CREATE AND SEND OFFER ===");
         this.pc.createOffer()

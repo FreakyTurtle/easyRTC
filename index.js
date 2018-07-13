@@ -26,8 +26,11 @@ export const getMedia = (video = defaultVideoConstraints, audio = defaultAudioCo
     };
     return new Promise((resolve, reject) => {
         navigator.mediaDevices.getUserMedia(constraints)
-        .then((stream)=> {
+        .then((stream) => {
             resolve(stream);
+        })
+        .catch((err) => {
+            reject(err);
         })
     })
 };
@@ -70,7 +73,7 @@ export class Bond {
             createdOffer.sdp = this.setSessionDescriptionBandwidth(createdOffer.sdp);
             this.sendMessage(createdOffer, this.id);
         }).catch((error) => {
-            trace('Failed to create session description: ' + error.toString());
+            console.error('Failed to create session description: ' + error.toString());
         });
     }
 

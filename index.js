@@ -19,10 +19,10 @@ var defaultServers = {
   }]
 };
 
-export const getMedia = (video = defaultVideoConstraints, audio = defaultAudioConstraints) => {
+export getMedia(video, audio){
     let constraints = {
-        video,
-        audio
+        video: video ? video : defaultVideoConstraints,
+        audio: audio ? audio : defaultAudioConstraints
     };
     return new Promise((resolve, reject) => {
         navigator.mediaDevices.getUserMedia(constraints)

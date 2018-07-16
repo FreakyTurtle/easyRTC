@@ -31,8 +31,8 @@ export const getMedia = (video = defaultVideoConstraints, audio = defaultAudioCo
         })
         .catch((err) => {
             reject(err);
-        })
-    })
+        });
+    });
 };
 
 export class Bond {

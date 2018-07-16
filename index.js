@@ -19,20 +19,20 @@ var defaultServers = {
   }]
 };
 
-export function getMedia(video, audio){
+export function getMedia(video, audio, callback){
     let constraints = {
         video: video ? video : defaultVideoConstraints,
         audio: audio ? audio : defaultAudioConstraints
     };
-    return new Promise((resolve, reject) => {
-        navigator.mediaDevices.getUserMedia(constraints)
-        .then((stream) => {
-            resolve(stream);
-        })
-        .catch((err) => {
-            reject(err);
-        });
+    // return new Promise((resolve, reject) => {
+    navigator.mediaDevices.getUserMedia(constraints)
+    .then((stream) => {
+        callback(stream);
+    })
+    .catch((err) => {
+        throw err;
     });
+    // });
 };
 
 export class Bond {

@@ -1,9 +1,9 @@
 var path = require('path');
 
 module.exports = {
-  entry: './simplertc.js',
+  entry: './index.js',
   output: {
-    filename: 'index.js',
+    filename: 'simplertc.js',
     path: path.resolve(__dirname, './')
 },
   module: {

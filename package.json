@@ -1,6 +1,6 @@
 {
   "name": "simplertc",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "A package that makes using the powerful technologies behind webRTC a breeze.",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,9 @@
     "encrypted",
     "communication",
     "real",
-    "time"
+    "time",
+    "easyRTC",
+    "simpleRTC"
   ],
   "author": "FreakyTurtle <freakyturtledev@gmail.com> (http://simplertc.io)",
   "license": "ISC",

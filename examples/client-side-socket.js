@@ -4,12 +4,15 @@ import {getMedia, Bond} from 'simplertc';
 
 let socket = io('http://localhost:8080/');
 let localStream;
-let bonds = window.bonds = {};
+let bonds = {};
 let room;
 let isSpeaking;
 let updating;
 let muted = false;
 let isScreensharing = false;
+let this_id = '';
+let whoami_verification = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+let littleBlackBook = {};
 
 const video = {
   optional: [
@@ -35,7 +38,8 @@ var screenshare_constraints = {
 
 
 ////////// THIS IS WHERE WE START
-const init = (roomToJoin) => {
+const init = (roomToJoin, username = localStorage.getItem('un') ? localStorage.getItem('un') : Math.random().toString(36).substr(2, 5)) => {
+    littleBlackBook['local'] = username;
     return new Promise((resolve, reject) => {
         if(roomToJoin){
             room = roomToJoin;
@@ -57,11 +61,12 @@ const init = (roomToJoin) => {
 
 socket.on('created', function(room, id) {
     //First person in this room
-    console.log('Created room ' + room);
+    console.log('Created room ' + room, 'I am '+id);
     emitEvent('roomcreated', {detail: id});
     if(localStream){
         emitEvent('streamAdded', { detail: 'local' });
-    }
+    };
+    this_id = id;
 });
 
 socket.on('full', function(room){
@@ -76,16 +81,25 @@ socket.on('join', function(room, id){
     /////THIS IS WHERE WE SHOULD START THE HANDSHAKING
     bonds[id] = new Bond(localStream, id, sendMessage, callbacks);
     bonds[id].createAndSendOffer();
+    sendMessage({
+        type: 'whoami',
+        name: littleBlackBook['local']
+    }, id);
     emitEvent('newArrival', {detail: id});
 });
 
-socket.on('joined', function(room){
+socket.on('joined', function(room, id){
     //joined a room, not much useful can really happen here without knowing who else is in the room
-    console.log("Joined room: " + room);
+    console.log("Joined room: " + room+", I am "+ id);
+    sendMessage({
+        type: 'whoami',
+        name: littleBlackBook['local']
+    });
     emitEvent('roomjoined', {detail: room});
     if(localStream){
         emitEvent('streamAdded', { detail: 'local' });
     }
+    this_id = id;
 });
 
 socket.on('log', function(array){
@@ -104,6 +118,9 @@ socket.on('message', (fromId, msg) => {
         //One of the people in the room is leaving, bye felicia
         bonds[fromId].handleRemoteHangup();
         delete bonds[fromId];
+        emitEvent('streamRemoved', { detail: fromId });
+    }else if(msg && msg.name && msg.type === 'whoami'){
+        littleBlackBook[fromId] = msg.name;
     }else if(msg && msg.type){
         switch (msg.type) {
             case 'offer':
@@ -114,6 +131,10 @@ socket.on('message', (fromId, msg) => {
                     bonds[fromId] = new Bond(localStream, fromId, sendMessage, callbacks);
                     bonds[fromId].receivedOffer(msg);
                 }
+                if(bonds[fromId] && bonds[fromId].getIceConnectionState && ['new', 'failed', 'checking', 'disconnected', 'closed'].indexOf(bonds[fromId].getIceConnectionState) === -1){
+                    //Ooo this is from someone we're already connected with they must be changing streams
+                    emitEvent('streamChanged', { detail: fromId });
+                }
                 break;
             case 'answer':
                 console.log("RECEIVED ANSWER");
@@ -123,6 +144,12 @@ socket.on('message', (fromId, msg) => {
                 console.log("RECEIVED CANDIDATE");
                 if(bonds[fromId]){
                     bonds[fromId].receivedIceCandidate(msg);
+                }
+                break;
+            case 'whoami':
+                if(msg.verification === whoami_verification){
+                    console.log("===I KNOW WHO I AM===", fromId);
+                    this_id = fromId;
                 }
                 break;
             default:
@@ -173,7 +200,8 @@ const callbacks = {
         emitEvent('streamRemoved', { detail: id});
     },
     onDataReceive: (event) => {
-        emitEvent('dataReceived', {detail: event.data});
+        console.log("===ON DATA RECEIVE====", event);
+        emitEvent('dataReceived', {detail: event});
     }
 }
 
@@ -197,6 +225,10 @@ const getRemoteStream = (id) => {
     return bonds[id].getRemoteStream();
 };
 const getIsScreensharing = () => isScreensharing;
+
+const getLocalClientId = () => this_id;
+
+const usernameLookup = (id) => littleBlackBook[id];
 
 const onRoomJoined = (callback) => {
     window.addEventListener('roomjoined', callback);
@@ -308,10 +340,10 @@ const hangup = () => {
     }
 }
 
-const sendData = (msg, type) => {
+const sendData = (msg) => {
     for (var key in bonds){
         if(bonds.hasOwnProperty(key)){
-            bonds[key].sendData(msg, type);
+            bonds[key].sendData(msg);
         }
     }
 }
@@ -337,14 +369,18 @@ const screenshare = (sharingScreen, source) => {
             constraints.video.mandatory['chromeMediaSourceId'] = source.id;
             getMedia(constraints.video, constraints.audio)
             .then((stream) => {
+                console.log("got stream", stream.getVideoTracks());
+
+                console.log("GOT SCREENSHARE", localStream.getVideoTracks());
                 //remove all the old video tracks
-                for (var i = 0; i < localStream.getVideoTracks.length; i++) {
-                    localStream.removeTrack(localStream.getVideoTracks[i]);
+                for (var i = 0; i < localStream.getVideoTracks().length; i++) {
+                    localStream.removeTrack(localStream.getVideoTracks()[i]);
                 }
                 //add all the new video tracks
-                for (var i = 0; i < stream.getVideoTracks.length; i++) {
-                    localStream.addTrack(stream.getVideoTracks[i]);
+                for (var i = 0; i < stream.getVideoTracks().length; i++) {
+                    localStream.addTrack(stream.getVideoTracks()[i]);
                 }
+                console.log("local stream", localStream.getVideoTracks());
                 //ADD UPDATE CONNECTION HERE
                 for (var key in bonds){
                     if(bonds.hasOwnProperty(key)){
@@ -361,13 +397,14 @@ const screenshare = (sharingScreen, source) => {
         }else{
             getMedia()
             .then((stream) => {
+                console.log("NOT GOT SCREENSHARE");
                 //remove all the old video tracks
-                for (var i = 0; i < localStream.getVideoTracks.length; i++) {
-                    localStream.removeTrack(localStream.getVideoTracks[i]);
+                for (var i = 0; i < localStream.getVideoTracks().length; i++) {
+                    localStream.removeTrack(localStream.getVideoTracks()[i]);
                 }
                 //add all the new video tracks
-                for (var i = 0; i < stream.getVideoTracks.length; i++) {
-                    localStream.addTrack(stream.getVideoTracks[i]);
+                for (var i = 0; i < stream.getVideoTracks().length; i++) {
+                    localStream.addTrack(stream.getVideoTracks()[i]);
                 }
                 //ADD UPDATE CONNECTION HERE
                 for (var key in bonds){
@@ -389,10 +426,13 @@ const screenshare = (sharingScreen, source) => {
 const socketapi = {
   init,
   getLocalStream,
+  getLocalClientId,
   onStreamAdded,
   removeOnStreamAdded,
   onStreamRemoved,
   removeOnStreamRemoved,
+  onDataReceived,
+  removeOnDataReceived,
   onStreamChanged,
   removeOnStreamChanged,
   onActiveChange,
@@ -417,6 +457,7 @@ const socketapi = {
   screenshare,
   updateBandwidth,
   hangup,
+  usernameLookup,
   sendData
 }
 

@@ -52,6 +52,7 @@ export class Bond {
         this.handleRemoteStreamRemoved = this.handleRemoteStreamRemoved.bind(this);
         this.onDataChannelOpen = this.onDataChannelOpen.bind(this);
         this.onDataChannelReceive = this.onDataChannelReceive.bind(this);
+        this.getBandwidth = this.getBandwidth.bind(this);
 
         this.dataChannel = this.pc.createDataChannel("data", {negotiated: true, id: 7});
         this.dataChannel.onopen = this.onDataChannelOpen;
@@ -64,38 +65,13 @@ export class Bond {
         this.pc.addStream(this.localStream);
     }
 
-
-    updateLocalStreamVideo(stream){
-        //remove all the old video tracks
-        for (var i = 0; i < this.localStream.getVideoTracks.length; i++) {
-            this.localStream.removeTrack(this.localStream.getVideoTracks[i]);
-        }
-        //add all the new video tracks
-        for (var i = 0; i < stream.getVideoTracks.length; i++) {
-            localStream.addTrack(stream.getVideoTracks[i]);
-        }
-        this.createAndSendOffer();
-    }
-
-    updateLocalStreamVideo(stream){
-        //remove all the old video tracks
-        for (var i = 0; i < this.localStream.getAudioTracks.length; i++) {
-            this.localStream.removeTrack(this.localStream.getAudioTracks[i]);
-        }
-        //add all the new video tracks
-        for (var i = 0; i < stream.getAudioTracks.length; i++) {
-            localStream.addTrack(stream.getAudioTracks[i]);
-        }
-        this.createAndSendOffer();
-    }
-
     createAndSendOffer(){
         console.log("=== CREATE AND SEND OFFER ===");
         this.pc.createOffer()
         .then((createdOffer) => {
             this.pc.setLocalDescription(createdOffer);
             createdOffer.sdp = this.setSessionDescriptionBandwidth(createdOffer.sdp);
-            this.sendMessage(createdOffer, this.id);
+            this.sendMessage(createdOffer);
         }).catch((error) => {
             console.error('Failed to create session description: ' + error.toString());
         });
@@ -104,6 +80,11 @@ export class Bond {
     receivedOffer(msg){
         console.log("=== RECEIVED OFFER ===");
         this.pc.setRemoteDescription(new RTCSessionDescription(msg));
+        let bw = this.getBandwidth(msg.sdp);
+        //if their bandwidth is set to lower than ours, default to theirs
+        if((this.bandwidth[0] + this.bandwidth[0]) > (bw[0] + bw[1])){
+            this.bandwidth = bw;
+        }
         this.createAndSendAnswer();
     }
 
@@ -177,10 +158,10 @@ export class Bond {
 
     onDataChannelOpen(event){
         console.log("=== DATA CHANNEL OPEN ===");
-        this.dataChannel.send('HI! ' + this.id);
     }
 
     onDataChannelReceive(event){
+        console.log("received data", event);
         this.callbacks.onDataReceive(event);
     }
 
@@ -189,6 +170,13 @@ export class Bond {
     }
 
     //// getters and setters
+
+    getIceConnectionState(){
+        if(!this.pc){
+            return false;
+        }
+        return this.pc.iceConnectionState;
+    }
 
     getLocalStream(){
         return this.localStream;
@@ -212,6 +200,17 @@ export class Bond {
     setBandwidth(bw = [250, 2250]){
         this.bandwidth = bw;
         this.createAndSendOffer();
+    }
+
+    getBandwidth(sdp){
+      var lines = sdp.split("\n");
+      var ret = [];
+      for (var i = 0; i < lines.length; i++) {
+        if(lines[i].indexOf("b=AS:") > -1){
+          ret.push(parseInt(lines[i].split(":")[1]));
+        }
+      }
+      return ret;
     }
 
     // UTILITY

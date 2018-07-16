@@ -19,7 +19,7 @@ var defaultServers = {
   }]
 };
 
-export getMedia(video, audio){
+export function getMedia(video, audio){
     let constraints = {
         video: video ? video : defaultVideoConstraints,
         audio: audio ? audio : defaultAudioConstraints

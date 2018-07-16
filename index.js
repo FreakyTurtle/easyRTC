@@ -29,7 +29,7 @@ export function getMedia(video, audio){
         .then(function (stream){
             resolve(stream);
         })
-        .catch(function(err){
+        .catch(function (err){
             reject(err);
         });
     });

@@ -14,10 +14,7 @@ var remoteStreams = {};
 var localStream = void 0;
 
 var defaultVideoConstraints = {
-    optional: [{ minWidth: 320 }, { minWidth: 640 }, { minWidth: 1024 }, { minWidth: 1280
-        // {minWidth: 1920},
-        // {minWidth: 2560},
-    }]
+    optional: [{ minWidth: 320 }, { minWidth: 640 }, { minWidth: 1024 }, { minWidth: 1280 }, { minWidth: 1920 }, { minWidth: 2560 }]
 };
 var defaultAudioConstraints = true;
 
@@ -27,11 +24,11 @@ var defaultServers = {
     }]
 };
 
-function getMedia(video, audio) {
-    var constraints = {
-        video: video ? video : defaultVideoConstraints,
-        audio: audio ? audio : defaultAudioConstraints
-    };
+function getMedia() {
+    var video = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultVideoConstraints;
+    var audio = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultAudioConstraints;
+
+    var constraints = { video: video, audio: audio };
     return new Promise(function (resolve, reject) {
         navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
             resolve(stream);
@@ -86,7 +83,7 @@ var Bond = exports.Bond = function () {
             this.pc.createOffer().then(function (createdOffer) {
                 _this.pc.setLocalDescription(createdOffer);
                 createdOffer.sdp = _this.setSessionDescriptionBandwidth(createdOffer.sdp);
-                _this.sendMessage(createdOffer);
+                _this.sendMessage(createdOffer, _this.id);
             }).catch(function (error) {
                 console.error('Failed to create session description: ' + error.toString());
             });

@@ -6,9 +6,9 @@ let defaultVideoConstraints = {
     {minWidth: 320},
     {minWidth: 640},
     {minWidth: 1024},
-    {minWidth: 1280}
-    // {minWidth: 1920},
-    // {minWidth: 2560},
+    {minWidth: 1280},
+    {minWidth: 1920},
+    {minWidth: 2560},
   ]
 };
 let defaultAudioConstraints = true;
@@ -19,11 +19,8 @@ var defaultServers = {
   }]
 };
 
-export function getMedia(video, audio){
-    let constraints = {
-        video: video ? video : defaultVideoConstraints,
-        audio: audio ? audio : defaultAudioConstraints
-    };
+export function getMedia(video = defaultVideoConstraints, audio = defaultAudioConstraints){
+    let constraints = {video, audio};
     return new Promise(function (resolve, reject){
         navigator.mediaDevices.getUserMedia(constraints)
         .then(function (stream){
@@ -71,7 +68,7 @@ export class Bond {
         .then((createdOffer) => {
             this.pc.setLocalDescription(createdOffer);
             createdOffer.sdp = this.setSessionDescriptionBandwidth(createdOffer.sdp);
-            this.sendMessage(createdOffer);
+            this.sendMessage(createdOffer, this.id);
         }).catch((error) => {
             console.error('Failed to create session description: ' + error.toString());
         });
